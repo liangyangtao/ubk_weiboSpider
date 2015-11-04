@@ -4,6 +4,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.UnsupportedEncodingException;
+import java.net.URLDecoder;
 import java.net.URLEncoder;
 import java.util.ArrayList;
 import java.util.Date;
@@ -64,11 +65,60 @@ public class WeiboLoginByHttpClinet {
 		HttpClientBuilder httpClientBuilder = new HttpClientBuilder(false,
 				poolingHttpClientConnectionManager, cookieStore);
 		httpClient = httpClientBuilder.getHttpClient();
-		String username = "";
-		String password = "";
-		new WeiboLoginByHttpClinet().login(username, password);
-		new WeiboLoginByHttpClinet().spider();
+		String username = "unbankcjf5@163.com";
+		String password = "unbank";
+		WeiboLoginByHttpClinet weiboLoginByHttpClinet = new WeiboLoginByHttpClinet();
 
+		weiboLoginByHttpClinet.login(username, password);
+		// weiboLoginByHttpClinet.spiderByPeple("http://weibo.com/u/2396658275");
+		// weiboLoginByHttpClinet.spiderByKeyword("银行");
+
+	}
+
+	/**
+	 * 登陆后根据关键词搜索
+	 * 
+	 * 
+	 * 
+	 */
+	private void spiderByKeyword(String keyword) {
+		try {
+			keyword = URLEncoder.encode(keyword, "utf-8");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		System.out.println(keyword);
+		String url = "http://s.weibo.com/weibo/" + keyword
+				+ "?topnav=1&wvr=6&b=1";
+		String html = getHtml(httpClient, url, null);
+		// System.out.println(html);
+		Document document = Jsoup.parse(html);
+		Elements scriptElements = document.select("script");
+		Element contentElement = null;
+		for (Element element : scriptElements) {
+			if (element.toString().contains("\"pid\":\"pl_weibo_direct\"")) {
+				contentElement = element;
+				break;
+			}
+		}
+		System.out.println(contentElement);
+		String myContent = StringUtils.substringBetween(
+				contentElement.toString(),
+				"<script>STK && STK.pageletM && STK.pageletM.view(",
+				")</script>");
+		JSONObject jsonObject = JSONObject.fromObject(myContent);
+		String content = jsonObject.getString("html");
+		Document homeFeedDocument = Jsoup.parse(content);
+		// WB_cardwrap WB_notes
+		Elements weiboList = homeFeedDocument.select("div.WB_cardwrap");
+		for (Element element : weiboList) {
+			try {
+				System.out.println(element.text());
+			} catch (Exception e) {
+				continue;
+			}
+		}
 	}
 
 	/**
@@ -81,8 +131,7 @@ public class WeiboLoginByHttpClinet {
 	 * 
 	 * 
 	 * */
-	private void spider() {
-		String url = "http://weibo.com/u/2396658275";
+	private void spiderByPeple(String url) {
 		String html = getHtml(httpClient, url, getCookiesString());
 		Document document = Jsoup.parse(html);
 		Elements scriptElements = document.select("script");
@@ -135,7 +184,7 @@ public class WeiboLoginByHttpClinet {
 		// String TC_Ugrow_G0 = StringUtils.substringBetween(cookies,
 		// "TC-Ugrow-G0=", ";");
 		// System.out.println("TC_Ugrow_G0     " + TC_Ugrow_G0);
- 
+
 		long DateTime = new Date().getTime();
 		// System.out.println(DateTime);
 		callUrl = callUrl + DateTime;
@@ -218,9 +267,10 @@ public class WeiboLoginByHttpClinet {
 		 * src="http://i.sso.sina.com.cn/js/ssologin.js"></script> </head>
 		 * <body> Signing in ... <script>
 		 * try{sinaSSOController.setCrossDomainUrlList({"retcode":0,"arrURL":[
-		 * "http:\/\/crosdom.weicaifu.com\/sso\/crosdom?action=login&savestate=1477987419","http:\/\/passport.97973.com\/sso\/crossdomain?action=login&savestate=1477987419","http:\/\/passport.weibo.cn\/sso\/crossdomain?action=login&savestate=1"]});}catch(e){}try{sinaSSOController.crossDomainAction('login',function(){location.replace('http://passport.weibo.com/wbsso/login?ssosavestate=1477987419&url=http%3A%2F%2Fweibo.com%2Fajaxlogin.php%3Fframelogin%3D1%26callback%3Dparent.sinaSSOController.feedBackUrlCallBack&ticket=ST-MjQ3ODk5MzQ2NQ==-1446451419-xd-49BB028CAFC03
-		 * 9 E 1 2 E B 9 9 9 C A A 6 0 3 F A 4 A & r e t c o d e = 0 ' ) ; } ) ;
-		 * } c a t c h ( e ) { } </script> </body> </html>
+		 * "http:\/\/crosdom.weicaifu.com\/sso\/crosdom?action=login&savestate=1477987419","http:\/\/passport.97973.com\/sso\/crossdomain?action=login&savestate=1477987419","http:\/\/passport.weibo.cn\/sso\/crossdomain?action=login&savestate=1"]});}catch(e){}try{sinaSSOController.crossDomainAction('login',function(){location.replace('http://passport.weibo.com/wbsso/login?ssosavestate=1477987419&url=http%3A%2F%2Fweibo.com%2Fajaxlogin.php%3Fframelogin%3D1%26callback%3Dparent.sinaSSOController.feedBackUrlCallBack&ticket=ST-MjQ3ODk5MzQ2NQ==-1446451419-xd
+		 * - 4 9 B B 0 2 8 C A F C 0 3 9 E 1 2 E B 9 9 9 C A A 6 0 3 F A 4 A & r
+		 * e t c o d e = 0 ' ) ; } ) ; } c a t c h ( e ) { } </script> </body>
+		 * </html>
 		 * 
 		 * */
 
@@ -234,6 +284,7 @@ public class WeiboLoginByHttpClinet {
 		 */
 		html = getHtml(httpClient, url, getCookiesString());
 		System.out.println(html);
+		System.out.println(getCookiesString());
 		return false;
 
 	}
