@@ -65,8 +65,8 @@ public class WeiboLoginByHttpClinet {
 		HttpClientBuilder httpClientBuilder = new HttpClientBuilder(false,
 				poolingHttpClientConnectionManager, cookieStore);
 		httpClient = httpClientBuilder.getHttpClient();
-		String username = "unbankcjf5@163.com";
-		String password = "unbank";
+		String username = "";
+		String password = "";
 		WeiboLoginByHttpClinet weiboLoginByHttpClinet = new WeiboLoginByHttpClinet();
 
 		weiboLoginByHttpClinet.login(username, password);
